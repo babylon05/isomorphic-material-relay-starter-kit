@@ -1,13 +1,15 @@
+/* @flow weak */
+
 import Relay from 'react-relay';
 
 export default class ToDo_list_deleteCompletedMutation extends Relay.Mutation {
   static fragments = {
-    // TODO: Make completedCount, edges, and totalCount optional
+    // TODO: Make ToDo_CompletedCount, edges, and ToDo_TotalCount optional
     ToDos: () => Relay.QL`
       fragment on ToDosConnection {
         edges {
           node {
-            complete,
+            ToDo_Complete,
             id,
           },
         },
@@ -15,9 +17,9 @@ export default class ToDo_list_deleteCompletedMutation extends Relay.Mutation {
     `,
     Viewer: () => Relay.QL`
       fragment on Viewer {
-        completedCount,
+        ToDo_CompletedCount,
         id,
-        totalCount,
+        ToDo_TotalCount,
       }
     `,
   };
@@ -29,8 +31,8 @@ export default class ToDo_list_deleteCompletedMutation extends Relay.Mutation {
       fragment on ToDo_list_deleteCompletedPayload {
         deletedToDoIds,
         Viewer {
-          completedCount,
-          totalCount,
+          ToDo_CompletedCount,
+          ToDo_TotalCount,
         },
       }
     `;
@@ -52,19 +54,19 @@ export default class ToDo_list_deleteCompletedMutation extends Relay.Mutation {
     var newTotalCount;
     if (this.props.ToDos && this.props.ToDos.edges) {
       deletedToDoIds = this.props.ToDos.edges
-        .filter(edge => edge.node.complete)
+        .filter(edge => edge.node.ToDo_Complete)
         .map(edge => edge.node.id);
     }
-    var {completedCount, totalCount} = this.props.Viewer;
-    if (completedCount != null && totalCount != null) {
-      newTotalCount = totalCount - completedCount;
+    var {ToDo_CompletedCount, ToDo_TotalCount} = this.props.Viewer;
+    if (ToDo_CompletedCount != null && ToDo_TotalCount != null) {
+      newTotalCount = ToDo_TotalCount - ToDo_CompletedCount;
     }
     return {
       deletedToDoIds,
       Viewer: {
-        completedCount: 0,
+        ToDo_CompletedCount: 0,
         id: this.props.Viewer.id,
-        totalCount: newTotalCount,
+        ToDo_TotalCount: newTotalCount,
       },
     };
   }

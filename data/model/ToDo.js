@@ -4,8 +4,8 @@ export default class ToDo
   constructor( fields )
   {
     this.id = fields.id;
-    this.User_id = fields.User_id;
-    this.text = fields.text;
-    this.complete = fields.complete;
+    this.ToDo_User_id = fields.ToDo_User_id;
+    this.ToDo_Text = fields.ToDo_Text;
+    this.ToDo_Complete = fields.ToDo_Complete;
   }
 }

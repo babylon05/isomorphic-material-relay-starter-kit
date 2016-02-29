@@ -1,13 +1,15 @@
+/* @flow weak */
+
 import Relay from 'react-relay';
 
 export default class ToDo_list_updateMarkAllMutation extends Relay.Mutation {
   static fragments = {
-    // TODO: Mark edges and totalCount optional
+    // TODO: Mark edges and ToDo_TotalCount optional
     ToDos: () => Relay.QL`
       fragment on ToDosConnection {
         edges {
           node {
-            complete,
+            ToDo_Complete,
             id,
           },
         },
@@ -16,7 +18,7 @@ export default class ToDo_list_updateMarkAllMutation extends Relay.Mutation {
     Viewer: () => Relay.QL`
       fragment on Viewer {
         id,
-        totalCount,
+        ToDo_TotalCount,
       }
     `,
   };
@@ -27,7 +29,7 @@ export default class ToDo_list_updateMarkAllMutation extends Relay.Mutation {
     return Relay.QL`
       fragment on ToDo_list_updateMarkAllPayload {
         Viewer {
-          completedCount,
+          ToDo_CompletedCount,
           ToDos,
         },
       }
@@ -43,7 +45,7 @@ export default class ToDo_list_updateMarkAllMutation extends Relay.Mutation {
   }
   getVariables() {
     return {
-      complete: this.props.complete,
+      ToDo_Complete: this.props.ToDo_Complete,
     };
   }
   getOptimisticResponse() {
@@ -51,18 +53,18 @@ export default class ToDo_list_updateMarkAllMutation extends Relay.Mutation {
     if (this.props.ToDos && this.props.ToDos.edges) {
       ViewerPayload.ToDos = {
         edges: this.props.ToDos.edges
-          .filter(edge => edge.node.complete !== this.props.complete)
+          .filter(edge => edge.node.ToDo_Complete !== this.props.ToDo_Complete)
           .map(edge => ({
             node: {
-              complete: this.props.complete,
+              ToDo_Complete: this.props.ToDo_Complete,
               id: edge.node.id,
             },
           }))
       };
     }
-    if (this.props.Viewer.totalCount != null) {
-      ViewerPayload.completedCount = this.props.complete ?
-        this.props.Viewer.totalCount :
+    if (this.props.Viewer.ToDo_TotalCount != null) {
+      ViewerPayload.ToDo_CompletedCount = this.props.ToDo_Complete ?
+        this.props.Viewer.ToDo_TotalCount :
         0;
     }
     return {

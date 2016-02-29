@@ -1,3 +1,5 @@
+/* @flow weak */
+
 import { fromGlobalId, mutationWithClientMutationId } from "graphql-relay";
 import { GraphQLBoolean, GraphQLID, GraphQLNonNull } from "graphql";
 
@@ -11,22 +13,23 @@ import ViewerType from '../type/ViewerType';
 export default mutationWithClientMutationId( {
   name: 'ToDo_updateStatus',
   inputFields: {
-    complete: { type: new GraphQLNonNull( GraphQLBoolean ) },
+    ToDo_Complete: { type: new GraphQLNonNull( GraphQLBoolean ) },
     id: { type: new GraphQLNonNull( GraphQLID ) },
   },
   outputFields: {
-    todo: {
+    ToDo: {
       type: ToDoType,
-      resolve: ( {localToDoId} ) => DA_ToDo_get( localToDoId ),
+      resolve: ( {localToDoId}, { ...args }, { rootValue: {user_id} } ) => DA_ToDo_get( user_id, localToDoId ),
     },
     Viewer: {
       type: ViewerType,
       resolve: ( parent, args, { rootValue: {user_id} } ) => DA_User_get( user_id )
     },
   },
-  mutateAndGetPayload: ( { id, complete } ) => {
+  mutateAndGetPayload: ( { id, ToDo_Complete }, { rootValue: {user_id} } ) => {
     var localToDoId = fromGlobalId(id).id;
-    DA_ToDo_update( localToDoId, { complete: complete } );
-    return {localToDoId};
+    return DA_ToDo_update( user_id, localToDoId, { ToDo_Complete: ToDo_Complete } )
+    .then( ( ) => ( {localToDoId} ) )
+    ;
   },
 } );

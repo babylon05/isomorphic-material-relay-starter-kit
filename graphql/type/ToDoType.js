@@ -1,3 +1,5 @@
+/* @flow weak */
+
 import { globalIdField } from "graphql-relay";
 import { GraphQLBoolean, GraphQLString, GraphQLObjectType } from "graphql";
 
@@ -11,13 +13,7 @@ export default new GraphQLObjectType( {
   isTypeOf: object => object instanceof ToDo,
   fields: {
     id: globalIdField('ToDo'),
-    text: {
-      type: GraphQLString,
-      resolve: (obj) => obj.text,
-    },
-    complete: {
-      type: GraphQLBoolean,
-      resolve: (obj) => obj.complete,
-    }
+    ToDo_Text: { type: GraphQLString, resolve: (obj) => obj.ToDo_Text },
+    ToDo_Complete: { type: GraphQLBoolean, resolve: (obj) => obj.ToDo_Complete },
   },
 } );

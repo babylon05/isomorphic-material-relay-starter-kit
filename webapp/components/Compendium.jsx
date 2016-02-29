@@ -1,16 +1,19 @@
+/* @flow weak */
+
 import React from 'react';
 import Relay from 'react-relay';
 
-import RaisedButton from 'material-ui/lib/raised-button';
 import Card from 'material-ui/lib/card/card';
 import CardHeader from 'material-ui/lib/card/card-header';
 import CardText from 'material-ui/lib/card/card-text';
 import Checkbox from 'material-ui/lib/checkbox';
 import MenuItem from 'material-ui/lib/menus/menu-item';
+import RaisedButton from 'material-ui/lib/raised-button';
 import SelectField from 'material-ui/lib/select-field';
 import TextField from 'material-ui/lib/text-field';
 
 import Compendium_updateMutation from '../mutations/Compendium_updateMutation';
+
 
 class Compendium extends React.Component
 {
@@ -37,10 +40,10 @@ class Compendium extends React.Component
   componentDidMount( )
   {
     // Call all validation methods here
-    this._Compendium_RangedNumberChange( );
+    this._handle_onChange_Compendium_RangedNumber( );
   }
 
-  _handleUpdate( Compendium )
+  _handleUpdate = ( Compendium ) =>
   {
     Relay.Store.commitUpdate(
       new Compendium_updateMutation( {
@@ -62,9 +65,9 @@ class Compendium extends React.Component
         Compendium_LikedSunset_OtherText:   this.refs.Compendium_LikedSunset_OtherText.getValue( ),
       } )
     );
-  }
+  };
 
-  _Compendium_RangedNumberChange( )
+  _handle_onChange_Compendium_RangedNumber = ( ) =>
   {
     const value = this.refs.Compendium_RangedNumber.getValue( );
     const valueInt = parseInt( value, 10 );
@@ -78,65 +81,70 @@ class Compendium extends React.Component
     this.setState( {
       Compendium_RangedNumber_error: errorText
     } );
-  }
+  };
 
-  _Compendium_ExcitementChange( event, index, value )
+  _handle_onChange_Compendium_Excitement = ( event, index, value ) =>
   {
     this.setState( {
       Compendium_Excitement: value
     } );
-  }
+  };
 
-  _Compendium_FavoriteMammalChange( event, index, value )
+  _handle_onChange_Compendium_FavoriteMammal = ( event, index, value ) =>
   {
     this.setState( {
       Compendium_FavoriteMammal: value
     } );
-  }
+  };
 
-  _Compendium_LikedSunset_OceanChange( event, value )
+  _handle_onChange_Compendium_LikedSunset_Ocean = ( event, value ) =>
   {
     this.setState( {
       Compendium_LikedSunset_Ocean: value
     } );
-  }
+  };
 
-  _Compendium_LikedSunset_LakeChange( event, value )
+  _handle_onChange_Compendium_LikedSunset = ( event, value ) =>
   {
     this.setState( {
       Compendium_LikedSunset_Lake: value
     } );
-  }
-  _Compendium_LikedSunset_MountainsChange( event, value )
+  };
+
+  _handle_onChange_Compendium_LikedSunset_Mountains = ( event, value ) =>
   {
     this.setState( {
       Compendium_LikedSunset_Mountains: value
     } );
-  }
-  _Compendium_LikedSunset_PlainsChange( event, value )
+  };
+
+  _handle_onChange_Compendium_LikedSunset_Plains = ( event, value ) =>
   {
     this.setState( {
       Compendium_LikedSunset_Plains: value
     } );
-  }
-  _Compendium_LikedSunset_PurpleChange( event, value )
+  };
+
+  _handle_onChange_Compendium_LikedSunset_Purple = ( event, value ) =>
   {
     this.setState( {
       Compendium_LikedSunset_Purple: value
     } );
-  }
-  _Compendium_LikedSunset_GreenChange( event, value )
+  };
+
+  _handle_onChange_Compendium_LikedSunset_Green = ( event, value ) =>
   {
     this.setState( {
       Compendium_LikedSunset_Green: value
     } );
-  }
-  _Compendium_LikedSunset_OtherChange( event, value )
+  };
+
+  _handle_onChange_Compendium_LikedSunset_Other = ( event, value ) =>
   {
     this.setState( {
       Compendium_LikedSunset_Other: value
     } );
-  }
+  };
 
   render( )
   {
@@ -168,12 +176,12 @@ class Compendium extends React.Component
             floatingLabelText="A number between eighteen and sixty"
             fullWidth={ true }
             errorText={ this.state.Compendium_RangedNumber_error }
-            onChange={ this._Compendium_RangedNumberChange.bind( this ) }
+            onChange={ this._handle_onChange_Compendium_RangedNumber }
           />
           <SelectField
             value={ this.state.Compendium_FavoriteMammal }
             floatingLabelText="Which one is your favorite water mammal?"
-            onChange={ this._Compendium_FavoriteMammalChange.bind( this ) }
+            onChange={ this._handle_onChange_Compendium_FavoriteMammal }
             fullWidth={ true }
           >
             <MenuItem value={1} primaryText="Dolphin"/>
@@ -195,7 +203,7 @@ class Compendium extends React.Component
           <SelectField
             value={ this.state.Compendium_Excitement }
             floatingLabelText="How excited are you about Relay?"
-            onChange={ this._Compendium_ExcitementChange.bind( this ) }
+            onChange={ this._handle_onChange_Compendium_Excitement }
             fullWidth={ true }
           >
             <MenuItem value={1} primaryText="Ambivalent, just meh" label="Ambivalent"/>
@@ -219,37 +227,37 @@ class Compendium extends React.Component
           <Checkbox
             label="Over the ocean"
             defaultChecked={ this.state.Compendium_LikedSunset_Ocean }
-            onCheck={ this._Compendium_LikedSunset_OceanChange.bind( this ) }
+            onCheck={ this._handle_onChange_Compendium_LikedSunset_Ocean }
           />
           <Checkbox
             label="Over a lake"
             defaultChecked={ this.state.Compendium_LikedSunset_Lake }
-            onCheck={ this._Compendium_LikedSunset_LakeChange.bind( this ) }
+            onCheck={ this._handle_onChange_Compendium_LikedSunset }
           />
           <Checkbox
             label="From a mountain top"
             defaultChecked={ this.state.Compendium_LikedSunset_Mountains }
-            onCheck={ this._Compendium_LikedSunset_MountainsChange.bind( this ) }
+            onCheck={ this._handle_onChange_Compendium_LikedSunset_Mountains }
           />
           <Checkbox
             label="Over plains"
             defaultChecked={ this.state.Compendium_LikedSunset_Plains }
-            onCheck={ this._Compendium_LikedSunset_PlainsChange.bind( this ) }
+            onCheck={ this._handle_onChange_Compendium_LikedSunset_Plains }
           />
           <Checkbox
             label="Purple"
             defaultChecked={ this.state.Compendium_LikedSunset_Purple }
-            onCheck={ this._Compendium_LikedSunset_PurpleChange.bind( this ) }
+            onCheck={ this._handle_onChange_Compendium_LikedSunset_Purple }
           />
           <Checkbox
             label="Green"
             defaultChecked={ this.state.Compendium_LikedSunset_Green }
-            onCheck={ this._Compendium_LikedSunset_GreenChange.bind( this ) }
+            onCheck={ this._handle_onChange_Compendium_LikedSunset_Green }
           />
           <Checkbox
             label="Other"
             defaultChecked={ this.state.Compendium_LikedSunset_Other }
-            onCheck={ this._Compendium_LikedSunset_OtherChange.bind( this ) }
+            onCheck={ this._handle_onChange_Compendium_LikedSunset_Other }
           />
           <TextField
             ref="Compendium_LikedSunset_OtherText"

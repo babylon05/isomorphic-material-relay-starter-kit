@@ -1,3 +1,5 @@
+/* @flow weak */
+
 import React from 'react';
 import Relay from 'react-relay';
 
@@ -11,37 +13,37 @@ import ToDo_Item from './ToDo_Item.jsx';
 
 class ToDo_List extends React.Component
 {
-  _handleMarkAllOnCheck( event, checked )
+  _handle_onCheck_MarkAll = ( event, checked ) =>
   {
     Relay.Store.commitUpdate(
       new ToDo_list_updateMarkAllMutation( {
-        complete: checked,
+        ToDo_Complete: checked,
         ToDos: this.props.Viewer.ToDos,
         Viewer: this.props.Viewer,
       } )
     );
-  }
+  };
 
   renderToDos( )
   {
     return this.props.Viewer.ToDos.edges.map(edge =>
       <ToDo_Item
         key={edge.node.id}
-        todo={edge.node}
+        ToDo={edge.node}
         Viewer={this.props.Viewer}
       />
     );
   }
 
-  _handleTabsChange( value )
+  _handle_requestChange = ( value ) =>
   {
     this.context.router.push( '/ToDos/' + value );
-  }
+  };
 
   renderTabs( )
   {
     return(
-      <Tabs valueLink={ { value: this.props.relay.variables.status, requestChange: this._handleTabsChange.bind( this ) } }>
+      <Tabs valueLink={ { value: this.props.relay.variables.status, requestChange: this._handle_requestChange } }>
         <Tab label="All" value="any" />
         <Tab label="Active" value="active" />
         <Tab label="Completed" value="completed" />
@@ -51,15 +53,15 @@ class ToDo_List extends React.Component
 
   render( )
   {
-    var numToDos = this.props.Viewer.totalCount;
-    var numCompletedToDos = this.props.Viewer.completedCount;
+    var numToDos = this.props.Viewer.ToDo_TotalCount;
+    var numCompletedToDos = this.props.Viewer.ToDo_CompletedCount;
     return (
       <div>
         { this.renderTabs( ) }
         <Checkbox
           label="Mark all as complete"
           defaultChecked={ numToDos === numCompletedToDos }
-          onCheck={ this._handleMarkAllOnCheck.bind( this ) }
+          onCheck={ this._handle_onCheck_MarkAll }
         />
         <List>
           { this.renderToDos( ) }
@@ -70,7 +72,6 @@ class ToDo_List extends React.Component
 }
 
 ToDo_List.contextTypes = {
-  //history: React.PropTypes.object,
   router: React.PropTypes.object.isRequired,
 };
 
@@ -99,17 +100,17 @@ export default Relay.createContainer( ToDo_List, {
   fragments: {
     Viewer: () => Relay.QL`
       fragment on Viewer {
-        completedCount,
+        ToDo_CompletedCount,
         ToDos(status: $status, first: $limit) {
           edges {
             node {
               id,
-              ${ToDo_Item.getFragment('todo')},
+              ${ToDo_Item.getFragment('ToDo')},
             },
           },
           ${ToDo_list_updateMarkAllMutation.getFragment('ToDos')},
         },
-        totalCount,
+        ToDo_TotalCount,
         ${ToDo_list_updateMarkAllMutation.getFragment('Viewer')},
         ${ToDo_Item.getFragment('Viewer')},
       }

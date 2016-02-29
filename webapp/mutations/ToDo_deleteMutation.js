@@ -1,20 +1,22 @@
+/* @flow weak */
+
 import Relay from 'react-relay';
 
 export default class ToDo_deleteMutation extends Relay.Mutation {
   static fragments = {
-    // TODO: Mark complete as optional
-    todo: () => Relay.QL`
+    // TODO: Mark ToDo_Complete as optional
+    ToDo: () => Relay.QL`
       fragment on ToDo {
-        complete,
+        ToDo_Complete,
         id,
       }
     `,
-    // TODO: Mark completedCount and totalCount as optional
+    // TODO: Mark ToDo_CompletedCount and ToDo_TotalCount as optional
     Viewer: () => Relay.QL`
       fragment on Viewer {
-        completedCount,
+        ToDo_CompletedCount,
         id,
-        totalCount,
+        ToDo_TotalCount,
       }
     `,
   };
@@ -26,8 +28,8 @@ export default class ToDo_deleteMutation extends Relay.Mutation {
       fragment on ToDo_deletePayload {
         deletedToDoId,
         Viewer {
-          completedCount,
-          totalCount,
+          ToDo_CompletedCount,
+          ToDo_TotalCount,
         },
       }
     `;
@@ -43,21 +45,21 @@ export default class ToDo_deleteMutation extends Relay.Mutation {
   }
   getVariables() {
     return {
-      id: this.props.todo.id,
+      id: this.props.ToDo.id,
     };
   }
   getOptimisticResponse() {
     var ViewerPayload = {id: this.props.Viewer.id};
-    if (this.props.Viewer.completedCount != null) {
-      ViewerPayload.completedCount = this.props.todo.complete === true ?
-        this.props.Viewer.completedCount - 1 :
-        this.props.Viewer.completedCount;
+    if (this.props.Viewer.ToDo_CompletedCount != null) {
+      ViewerPayload.ToDo_CompletedCount = this.props.ToDo.ToDo_Complete === true ?
+        this.props.Viewer.ToDo_CompletedCount - 1 :
+        this.props.Viewer.ToDo_CompletedCount;
     }
-    if (this.props.Viewer.totalCount != null) {
-      ViewerPayload.totalCount = this.props.Viewer.totalCount - 1;
+    if (this.props.Viewer.ToDo_TotalCount != null) {
+      ViewerPayload.ToDo_TotalCount = this.props.Viewer.ToDo_TotalCount - 1;
     }
     return {
-      deletedToDoId: this.props.todo.id,
+      deletedToDoId: this.props.ToDo.id,
       Viewer: ViewerPayload,
     };
   }

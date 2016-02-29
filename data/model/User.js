@@ -6,7 +6,10 @@ export default class User
     this.id = fields.id;
     this.username = fields.username;
     this.password = fields.password;
-    this.displayName = fields.displayName;
-    this.email = fields.email;
+    this.User_DisplayName = fields.User_DisplayName;
+    this.User_ProfilePhoto = fields.User_ProfilePhoto;
+    this.User_Email = fields.User_Email;
+    this.User_Locale = fields.User_Locale;
+    this.User_AuthToken = fields.User_AuthToken;
   }
 }

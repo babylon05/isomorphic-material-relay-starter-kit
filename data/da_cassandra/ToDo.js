@@ -1,103 +1,135 @@
-import generateUUID from './generateUUID'
+/* @flow weak */
+
+import { runQuery, runQueryOneResult, runQueryNoResult, Uuid } from './_client.js';
 
 import ToDo from '../model/ToDo'
-
-// Helper function to make sure we get our proper FK ID values
-// The are constant so that we can use our cookies between server restarts
-export function DA_User_GetUUIDByID( id )
-{
-  if( id === 0 )
-  return '00000000-0000-0000-0000-000000000000'; // Anonymous user uses UUID also
-  if( id === 1 )
-    return 'd362e1df-1fa8-466b-b311-af90b2a71e8e';
-  if( id === 2 )
-    return '33171548-39d3-45d8-ab5c-5eedefe01dfc';
-}
-
-
-// Mock data
-
-var ToDo_listById = { };
-var ToDo_IDsByUser = { };
-ToDo_IDsByUser[ DA_User_GetUUIDByID( 0 ) ] = [ ];
-ToDo_IDsByUser[ DA_User_GetUUIDByID( 1 ) ] = [ ];
-ToDo_IDsByUser[ DA_User_GetUUIDByID( 2 ) ] = [ ];
-
-
-DA_ToDo_add( { User_id: DA_User_GetUUIDByID( 0 ), text: 'Taste JavaScript', complete: true } );
-DA_ToDo_add( { User_id: DA_User_GetUUIDByID( 1 ), text: 'Jack buy a unicorn', complete: false } );
-DA_ToDo_add( { User_id: DA_User_GetUUIDByID( 1 ), text: 'Jack sell a pony', complete: false } );
-DA_ToDo_add( { User_id: DA_User_GetUUIDByID( 1 ), text: 'Jack converse a brony', complete: true } );
-DA_ToDo_add( { User_id: DA_User_GetUUIDByID( 2 ), text: 'Jill Minify CSS', complete: false } );
-DA_ToDo_add( { User_id: DA_User_GetUUIDByID( 2 ), text: 'Jill Apply for an accelerator', complete: true } );
 
 
 // Data access functions
 
-export function DA_ToDo_add( fields )
+export function DA_ToDo_add( User_id, fields )
 {
-  var a_ToDo = new ToDo( fields );
-
-  a_ToDo.id = generateUUID( );
-
-  ToDo_listById[ a_ToDo.id ] = a_ToDo;
-  ToDo_IDsByUser[ a_ToDo.User_id ].push( a_ToDo.id );
-
-  return a_ToDo.id;
+  const id = Uuid.random( );
+  let cqlText = 'INSERT INTO "ToDo" (id, "ToDo_User_id", "ToDo_Text", "ToDo_Complete" ) VALUES (?, ?, ?, false);';
+  let cqlParams = [
+    id,
+    fields.ToDo_User_id,
+    fields.ToDo_Text,
+  ];
+  return runQueryNoResult( cqlText, cqlParams )
+  .then( ( ) => {
+    return id;
+  } )
+  ;
 }
 
-export function DA_ToDo_update( id, fields )
+export function DA_ToDo_update( User_id, id, fields : any )
 {
-  var a_ToDo = DA_ToDo_get( id );
+  // We will not update ToDo_User_id since it makes no sense to update it
+  let cqlText = 'UPDATE "ToDo" SET ';
+  let cqlParams = [ ];
 
-  if( 'complete' in fields ) a_ToDo.complete = fields.complete;
-  if( 'text' in fields ) a_ToDo.text = fields.text;
-}
+  let followingItem = false;
 
-export function DA_ToDo_get( id )
-{
-  return ToDo_listById[ id ];
-}
-
-export function DA_ToDo_list_get( user_id, status = 'any' )
-{
-  let ToDo_list = ToDo_IDsByUser[ user_id ].map( id => ToDo_listById[ id ] );
-
-  if( status !== 'any' )
+  if( 'ToDo_Text' in fields )
   {
-    let statusCheck = ( status === 'completed' );
-    ToDo_list = ToDo_list.filter( a_ToDo => a_ToDo.complete === statusCheck );
+    if( followingItem ) cqlText += ', ';
+    cqlText += '"ToDo_Text" = ?';
+    cqlParams.push( fields.ToDo_Text );
+    followingItem = true;
+  }
+  if( 'ToDo_Complete' in fields )
+  {
+    if( followingItem ) cqlText += ', ';
+    cqlText += '"ToDo_Complete" = ?';
+    cqlParams.push( fields.ToDo_Complete );
+    followingItem = true;
   }
 
-  return ToDo_list;
+  cqlText += ' WHERE id = ?;';
+  cqlParams.push( id );
+
+  return runQueryNoResult( cqlText, cqlParams );
 }
 
-export function DA_ToDo_list_updateMarkAll( user_id, complete )
+export function DA_ToDo_get( User_id, id )
 {
-  user_id = 0;
-  var changedToDos = [];
-  DA_ToDo_list_get( user_id ).forEach(a_ToDo => {
-    if (a_ToDo.complete !== complete) {
-      a_ToDo.complete = complete;
-      changedToDos.push(a_ToDo);
-    }
-  });
-  return changedToDos.map(a_ToDo => a_ToDo.id);
+  const cqlText = 'SELECT * FROM "ToDo" WHERE id = ?;';
+  const cqlParams = [ id ];
+
+  return runQueryOneResult( ToDo, cqlText, cqlParams );
 }
 
-export function DA_ToDo_delete( user_id, id )
+export function DA_ToDo_delete( User_id, id )
 {
-  var ix_ToDo = ToDo_IDsByUser[ user_id ].indexOf( id );
+  const cqlText = 'DELETE FROM "ToDo" WHERE id = ?;';
+  const cqlParams = [ id ];
 
-  if( ix_ToDo !== -1 )
-    ToDo_IDsByUser[ user_id ].splice( ix_ToDo, 1 );
-
-  delete ToDo_listById[ id ];
+  return runQueryOneResult( ToDo, cqlText, cqlParams );
 }
 
-export function DA_ToDo_list_deleteCompleted( user_id )
+export function DA_ToDo_list_get( User_id, status )
 {
-  var ToDo_listToRemove = DA_ToDo_list_get( user_id ).filter( a_ToDo => a_ToDo.complete );
-  ToDo_listToRemove.forEach( a_ToDo => DA_ToDo_delete( user_id, a_ToDo.id ) );
-  return ToDo_listToRemove.map( a_ToDo => a_ToDo.id );
+  let cqlText = 'SELECT * FROM "ToDo" WHERE "ToDo_User_id" = ?';
+  let cqlParams = [ User_id ];
+
+  if( status != 'any' )
+  {
+    // Allow filtering is OK since there won't be that many ToDos per user anyway.
+    cqlText += ' AND "ToDo_Complete" = ? ALLOW FILTERING';
+    cqlParams.push( status === 'completed' );
+  }
+
+  cqlText += ';';
+
+  return runQuery( ToDo, cqlText, cqlParams );
+}
+
+export function DA_ToDo_list_updateMarkAll( User_id, ToDo_Complete )
+{
+  console.log( "DA_ToDo_list_updateMarkAll: " + ToDo_Complete );
+
+  var changedToDos = [ ];
+  return DA_ToDo_list_get( User_id )
+  .then( ( arr_ToDo ) => {
+    let promisedToDoUpdates = [ ];
+    arr_ToDo.forEach( a_ToDo =>
+    {
+      if( a_ToDo.ToDo_Complete !== ToDo_Complete )
+      {
+        a_ToDo.ToDo_Complete = ToDo_Complete;
+        changedToDos.push( a_ToDo );
+
+        console.log( "DA_ToDo_list_updateMarkAll: " + a_ToDo.id.toString( ));
+        promisedToDoUpdates.push( DA_ToDo_update(
+          User_id,
+          a_ToDo.id,
+          { ToDo_Complete: ToDo_Complete }
+        ) );
+      }
+    } );
+    console.log( "DA_ToDo_list_updateMarkAll RET changedToDos:" + JSON.stringify( changedToDos ) );
+    return(
+      Promise.all( promisedToDoUpdates )
+    );
+  } )
+  .then( ( arr ) => {
+    console.log( "DA_ToDo_list_updateMarkAll FINALE: " + ToDo_Complete );
+    console.log( "changedToDos:" + JSON.stringify( changedToDos ) );
+    return changedToDos.map( a_ToDo => a_ToDo.id );
+  } )
+  ;
+}
+
+export function DA_ToDo_list_deleteCompleted( User_id )
+{
+  throw new Error( "The code below should be re-written with promises" );
+  /*
+  return new Promise( ( resolve, reject ) => setTimeout( ( ) =>
+  {
+    var ToDo_listToRemove = DA_ToDo_list_get( User_id ).filter( a_ToDo => a_ToDo.ToDo_Complete );
+    ToDo_listToRemove.forEach( a_ToDo => DA_ToDo_delete( User_id, a_ToDo.id ) );
+    resolve( ToDo_listToRemove.map( a_ToDo => a_ToDo.id ) );
+  }, 100 ) );
+  */
 }

@@ -1,17 +1,19 @@
+/* @flow weak */
+
 import Relay from 'react-relay';
 
 export default class ToDo_updateStatusMutation extends Relay.Mutation {
   static fragments = {
-    todo: () => Relay.QL`
+    ToDo: () => Relay.QL`
       fragment on ToDo {
         id,
       }
     `,
-    // TODO: Mark completedCount optional
+    // TODO: Mark ToDo_CompletedCount optional
     Viewer: () => Relay.QL`
       fragment on Viewer {
         id,
-        completedCount,
+        ToDo_CompletedCount,
       }
     `,
   };
@@ -21,11 +23,11 @@ export default class ToDo_updateStatusMutation extends Relay.Mutation {
   getFatQuery() {
     return Relay.QL`
       fragment on ToDo_updateStatusPayload {
-        todo {
-          complete,
+        ToDo {
+          ToDo_Complete,
         },
         Viewer {
-          completedCount,
+          ToDo_CompletedCount,
           ToDos,
         },
       }
@@ -35,28 +37,28 @@ export default class ToDo_updateStatusMutation extends Relay.Mutation {
     return [{
       type: 'FIELDS_CHANGE',
       fieldIDs: {
-        todo: this.props.todo.id,
+        ToDo: this.props.ToDo.id,
         Viewer: this.props.Viewer.id,
       },
     }];
   }
   getVariables() {
     return {
-      complete: this.props.complete,
-      id: this.props.todo.id,
+      ToDo_Complete: this.props.ToDo_Complete,
+      id: this.props.ToDo.id,
     };
   }
   getOptimisticResponse() {
     var ViewerPayload = {id: this.props.Viewer.id};
-    if (this.props.Viewer.completedCount != null) {
-      ViewerPayload.completedCount = this.props.complete ?
-        this.props.Viewer.completedCount + 1 :
-        this.props.Viewer.completedCount - 1;
+    if (this.props.Viewer.ToDo_CompletedCount != null) {
+      ViewerPayload.ToDo_CompletedCount = this.props.ToDo_Complete ?
+        this.props.Viewer.ToDo_CompletedCount + 1 :
+        this.props.Viewer.ToDo_CompletedCount - 1;
     }
     return {
-      todo: {
-        complete: this.props.complete,
-        id: this.props.todo.id,
+      ToDo: {
+        ToDo_Complete: this.props.ToDo_Complete,
+        id: this.props.ToDo.id,
       },
       Viewer: ViewerPayload,
     };

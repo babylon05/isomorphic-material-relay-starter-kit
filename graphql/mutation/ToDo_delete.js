@@ -1,3 +1,5 @@
+/* @flow weak */
+
 import { fromGlobalId, mutationWithClientMutationId } from "graphql-relay";
 import { GraphQLID, GraphQLNonNull } from "graphql";
 
@@ -22,9 +24,11 @@ export default mutationWithClientMutationId( {
       resolve: ( parent, args, { rootValue: {user_id} } ) => DA_User_get( user_id )
     },
   },
-  mutateAndGetPayload: ( {id}, { rootValue: {user_id} } ) => {
+  mutateAndGetPayload: ( {id}, { rootValue: {user_id} } ) =>
+  {
     var localToDoId = fromGlobalId(id).id;
-    DA_ToDo_delete( user_id, localToDoId );
-    return {id};
+    return DA_ToDo_delete( user_id, localToDoId )
+    .then( ( ) => ( {id} ) )
+    ;
   }
 } );
